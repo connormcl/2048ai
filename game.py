@@ -1,6 +1,7 @@
 from tkinter import *
 from gamelogic import *
 from copy import deepcopy
+from agents import RandomAgent, HeuristicAgent
 
 SIZE = 500
 GRID_LEN = 4
@@ -91,102 +92,5 @@ class GameGrid(Frame):
             self.board.add_tile() # add new tile
             self.update_grid_cells()
             print('Score:',self.board.score)
-
-class RandomAgent(object):
-    """docstring for RandomAgent"""
-    def __init__(self):
-        self.actions = ['up', 'down', 'left', 'right']
-
-    def next_action(self, state):
-        return np.random.choice(self.actions)
-
-class HeuristicAgent(object):
-    """docstring for HeuristicAgent"""
-    def __init__(self):
-        self.actions = ['up', 'down', 'left', 'right']
-        self.max_depth = 5
-        self.discount = 0.9
-
-    def corner_heuristic(self, state):
-        highest_tile = np.max(state)
-        corners = [state[0,0], state[0,3], state[3,0], state[3,3]]
-        if highest_tile in corners:
-            return highest_tile * 2
-        return 0
-
-    def ith_from_corner(self, state, corner, i, ith):
-        if corner == (0,0):
-            return (state[(i,0)] == ith) or (state[(0,i)] == ith)
-        elif corner == (0,3):
-            return (state[(0,3-i)] == ith) or (state[(0+i,3)] == ith)
-        elif corner == (3,0):
-            return (state[(3-i,0)] == ith) or (state[(3,i)] == ith)
-        else:
-            return (state[(3-i,3)] == ith) or (state[(3,3-i)] == ith)
-
-    def ordered_heuristic(self, state):
-        flat = state.flatten()
-        flat.sort()
-        score = 0
-        corners = [(0,0), (0,3), (3,0), (3,3)]
-        corner_vals = [state[0,0], state[0,3], state[3,0], state[3,3]]
-        corner = None
-        if flat[0] in corner_vals:
-            for i in range(len(corner_vals)):
-                if flat[0] == corner_vals[i]:
-                    corner = corners[i]
-        if corner:
-            for i in range(1,4):
-                ith = flat[i]
-                if self.ith_from_corner(state, corner, i, ith):
-                    score += 2 * ith
-        return score
-
-
-
-    def empty_tiles_heuristic(self, state):
-        return 16 - np.count_nonzero(state)
-
-    def utility(self, state):
-        return np.sum(state) + self.corner_heuristic(state) + self.empty_tiles_heuristic(state) + self.ordered_heuristic(state)
-
-    def execute_action(self, board, action):
-        board = deepcopy(board)
-        if action == 'up':
-            board.up()
-        elif action == 'down':
-            board.down()
-        elif action == 'left':
-            board.left()
-        else:
-            board.right()
-        return board
-
-    def search(self, board, depth):
-        bestVal = 0
-        bestAction = None
-        for a in self.actions:
-            new_board = self.execute_action(board, a)
-            if depth == self.max_depth:
-                val = self.utility(new_board.grid)
-            else:
-                val = self.utility(new_board.grid) + self.discount**(depth+1) * self.search(new_board, depth+1)[1]
-            if val > bestVal:
-                bestVal = val
-                bestAction = a
-        return bestAction, bestVal
-
-    def next_action(self, state):
-        # import pdb ; pdb.set_trace()
-        board = GameBoard()
-        board.grid = deepcopy(state)
-        self.actions = board.valid_actions()
-        action, value = self.search(board, 0)
-
-        return action
-        
-
-        
-        
 
 gamegrid = GameGrid()
