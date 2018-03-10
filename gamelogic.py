@@ -7,7 +7,7 @@
 # code easily while grading your problem set.
 from random import *
 import numpy as np
-import copy
+from copy import deepcopy
 
 class GameBoard(object):
     def __init__(self, n=4):
@@ -89,10 +89,31 @@ class GameBoard(object):
                     return False
         # col merge?:
         for i in range(self.n-1):
-            for j in range(self.n-1):
+            for j in range(self.n):
                 if self.grid[i,j] == self.grid[i+1,j] and self.grid[i,j] != 0:
                     return False
         return True
+
+    def valid_actions(self):
+        actions = []
+        board = deepcopy(self)
+        board.up()
+        if not np.array_equal(self.grid, board.grid):
+            actions.append('up')
+        board = deepcopy(self)
+        board.down()
+        if not np.array_equal(self.grid, board.grid):
+            actions.append('down')
+        board = deepcopy(self)
+        board.left()
+        if not np.array_equal(self.grid, board.grid):
+            actions.append('left')
+        board = deepcopy(self)
+        board.right()
+        if not np.array_equal(self.grid, board.grid):
+            actions.append('right')
+        return actions
+
 
 
 

@@ -1,5 +1,6 @@
 from tkinter import *
 from gamelogic import *
+from copy import deepcopy
 
 SIZE = 500
 GRID_LEN = 4
@@ -38,9 +39,25 @@ class GameGrid(Frame):
         self.board = GameBoard()
         self.commands = {   KEY_UP: self.board.up, KEY_DOWN: self.board.down, KEY_LEFT: self.board.left, KEY_RIGHT: self.board.right,
                             KEY_UP_ALT: self.board.up, KEY_DOWN_ALT: self.board.down, KEY_LEFT_ALT: self.board.left, KEY_RIGHT_ALT: self.board.right }
+        self.commands2 = {'up': self.board.up, 'down': self.board.down, 'left': self.board.left, 'right': self.board.right}
         self.update_grid_cells()
         
-        self.mainloop()
+        # self.mainloop()
+
+        # board = GameBoard()
+        import time
+        # agent = RandomAgent()
+        agent = HeuristicAgent()
+        print(self.board.grid)
+        while not self.board.is_game_over():
+            # time.sleep(.1)
+            a = agent.next_action(self.board.grid)
+            print('action:', a, ' |  score:', self.board.score)
+            self.commands2[a]()
+            self.board.add_tile()
+            print(self.board.grid)
+            self.update_grid_cells()
+            self.update()
 
     def init_grid(self):
         background = Frame(self, bg=BACKGROUND_COLOR_GAME, width=SIZE, height=SIZE)
@@ -70,22 +87,10 @@ class GameGrid(Frame):
     def key_down(self, event):
         key = repr(event.char)
         if key in self.commands:
-            # import pdb ; pdb.set_trace()
             self.commands[repr(event.char)]() # execute move
             self.board.add_tile() # add new tile
             self.update_grid_cells()
             print('Score:',self.board.score)
-            # self.matrix,done = self.commands[repr(event.char)](self.matrix)
-            # if done:
-            #     self.matrix = add_two(self.matrix)
-            #     self.update_grid_cells()
-            #     done=False
-            #     if game_state(self.matrix)=='win':
-            #         self.grid_cells[1][1].configure(text="You",bg=BACKGROUND_COLOR_CELL_EMPTY)
-            #         self.grid_cells[1][2].configure(text="Win!",bg=BACKGROUND_COLOR_CELL_EMPTY)
-            #     if game_state(self.matrix)=='lose':
-            #         self.grid_cells[1][1].configure(text="You",bg=BACKGROUND_COLOR_CELL_EMPTY)
-            #         self.grid_cells[1][2].configure(text="Lose!",bg=BACKGROUND_COLOR_CELL_EMPTY)
 
 class RandomAgent(object):
     """docstring for RandomAgent"""
@@ -94,29 +99,94 @@ class RandomAgent(object):
 
     def next_action(self, state):
         return np.random.choice(self.actions)
-        
 
-def main():
-    board = GameBoard()
-    agent = RandomAgent()
-    print(board.grid)
-    while not board.is_game_over():
-        a = agent.next_action(board.grid)
-        print('action:', a, ' |  score:', board.score)
-        if a == 'up':
+class HeuristicAgent(object):
+    """docstring for HeuristicAgent"""
+    def __init__(self):
+        self.actions = ['up', 'down', 'left', 'right']
+        self.max_depth = 5
+        self.discount = 0.9
+
+    def corner_heuristic(self, state):
+        highest_tile = np.max(state)
+        corners = [state[0,0], state[0,3], state[3,0], state[3,3]]
+        if highest_tile in corners:
+            return highest_tile * 2
+        return 0
+
+    def ith_from_corner(self, state, corner, i, ith):
+        if corner == (0,0):
+            return (state[(i,0)] == ith) or (state[(0,i)] == ith)
+        elif corner == (0,3):
+            return (state[(0,3-i)] == ith) or (state[(0+i,3)] == ith)
+        elif corner == (3,0):
+            return (state[(3-i,0)] == ith) or (state[(3,i)] == ith)
+        else:
+            return (state[(3-i,3)] == ith) or (state[(3,3-i)] == ith)
+
+    def ordered_heuristic(self, state):
+        flat = state.flatten()
+        flat.sort()
+        score = 0
+        corners = [(0,0), (0,3), (3,0), (3,3)]
+        corner_vals = [state[0,0], state[0,3], state[3,0], state[3,3]]
+        corner = None
+        if flat[0] in corner_vals:
+            for i in range(len(corner_vals)):
+                if flat[0] == corner_vals[i]:
+                    corner = corners[i]
+        if corner:
+            for i in range(1,4):
+                ith = flat[i]
+                if self.ith_from_corner(state, corner, i, ith):
+                    score += 2 * ith
+        return score
+
+
+
+    def empty_tiles_heuristic(self, state):
+        return 16 - np.count_nonzero(state)
+
+    def utility(self, state):
+        return np.sum(state) + self.corner_heuristic(state) + self.empty_tiles_heuristic(state) + self.ordered_heuristic(state)
+
+    def execute_action(self, board, action):
+        board = deepcopy(board)
+        if action == 'up':
             board.up()
-        elif a == 'down':
+        elif action == 'down':
             board.down()
-        elif a == 'left':
+        elif action == 'left':
             board.left()
         else:
             board.right()
-        board.add_tile()
-        print(board.grid)
+        return board
 
+    def search(self, board, depth):
+        bestVal = 0
+        bestAction = None
+        for a in self.actions:
+            new_board = self.execute_action(board, a)
+            if depth == self.max_depth:
+                val = self.utility(new_board.grid)
+            else:
+                val = self.utility(new_board.grid) + self.discount**(depth+1) * self.search(new_board, depth+1)[1]
+            if val > bestVal:
+                bestVal = val
+                bestAction = a
+        return bestAction, bestVal
 
+    def next_action(self, state):
+        # import pdb ; pdb.set_trace()
+        board = GameBoard()
+        board.grid = deepcopy(state)
+        self.actions = board.valid_actions()
+        action, value = self.search(board, 0)
 
-if __name__ == '__main__':
-    main()
+        return action
+        
 
-# gamegrid = GameGrid()
+        
+        
+
+gamegrid = GameGrid()
