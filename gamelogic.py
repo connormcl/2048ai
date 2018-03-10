@@ -7,6 +7,7 @@
 # code easily while grading your problem set.
 from random import *
 import numpy as np
+import copy
 
 class GameBoard(object):
     def __init__(self, n=4):
@@ -14,14 +15,16 @@ class GameBoard(object):
         self.grid = np.zeros((n,n))
         self.add_tile()
         self.add_tile()
+        self.score = 0
 
     def add_tile(self, val=2):
-        i = np.random.randint(0, self.n)
-        j = np.random.randint(0, self.n)
-        while(self.grid[i,j] != 0):
+        if 0 in self.grid:
             i = np.random.randint(0, self.n)
             j = np.random.randint(0, self.n)
-        self.grid[i,j] = val
+            while(self.grid[i,j] != 0):
+                i = np.random.randint(0, self.n)
+                j = np.random.randint(0, self.n)
+            self.grid[i,j] = val
 
     def merge(self):
         done = False
@@ -29,6 +32,7 @@ class GameBoard(object):
             for j in range(self.n-1):
                 if self.grid[i,j] == self.grid[i,j+1] and self.grid[i,j] != 0:
                     self.grid[i,j] *= 2
+                    self.score += self.grid[i,j]
                     self.grid[i,j+1] = 0
                     done = True
         return done
@@ -74,6 +78,22 @@ class GameBoard(object):
         self.reverse()
         self.transpose()
         return self.grid
+
+    def is_game_over(self):
+        if 0 in self.grid:
+            return False
+        # row merge?:
+        for i in range(self.n):
+            for j in range(self.n-1):
+                if self.grid[i,j] == self.grid[i,j+1] and self.grid[i,j] != 0:
+                    return False
+        # col merge?:
+        for i in range(self.n-1):
+            for j in range(self.n-1):
+                if self.grid[i,j] == self.grid[i+1,j] and self.grid[i,j] != 0:
+                    return False
+        return True
+
 
 
 #######
