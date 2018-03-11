@@ -130,3 +130,9 @@ class HeuristicAgent(object):
 
         return action
 
+class QLearningAgent(object):
+    """An agent that learns by Reinforcement Learning"""
+    def __init__(self):
+        self.arg = arg
+        
+

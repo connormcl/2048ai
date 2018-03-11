@@ -15,7 +15,8 @@ class GameBoard(object):
         self.grid = np.zeros((n,n))
         self.add_tile()
         self.add_tile()
-        self.score = 0
+        self.score = 0.0
+        self.largest_tile = 2.0
 
     def add_tile(self, val=2):
         if 0 in self.grid:
@@ -33,6 +34,8 @@ class GameBoard(object):
                 if self.grid[i,j] == self.grid[i,j+1] and self.grid[i,j] != 0:
                     self.grid[i,j] *= 2
                     self.score += self.grid[i,j]
+                    if self.grid[i,j] > self.largest_tile:
+                        self.largest_tile = self.grid[i,j]
                     self.grid[i,j+1] = 0
                     done = True
         return done
