@@ -14,6 +14,7 @@ class HeuristicAgent(object):
     def __init__(self):
         self.actions = ['up', 'down', 'left', 'right']
         self.max_depth = 4
+        # self.discount = 0.7
         self.discount = 0.7
 
     def corner_heuristic(self, state, last_state):
@@ -24,9 +25,9 @@ class HeuristicAgent(object):
             for i in range(len(corners)):
                 if highest_tile == corners[i]:
                     if highest_tile == last_corners[i]:
-                        return highest_tile * 5
+                        return highest_tile
                     else:
-                        return highest_tile * 1.5
+                        return highest_tile * 0.5
         return 0
 
     def highest_merged_heuristic(self, state):
@@ -52,17 +53,18 @@ class HeuristicAgent(object):
 
     def ith_from_corner(self, state, corner, i, ith):
         if corner == (0,0):
-            return (state[(i,0)] == ith) or (state[(0,i)] == ith)
+            return (state[i,0] == ith) or (state[0,i] == ith)
         elif corner == (0,3):
-            return (state[(0,3-i)] == ith) or (state[(0+i,3)] == ith)
+            return (state[0,3-i] == ith) or (state[0+i,3] == ith)
         elif corner == (3,0):
-            return (state[(3-i,0)] == ith) or (state[(3,i)] == ith)
+            return (state[3-i,0] == ith) or (state[3,i] == ith)
         else:
-            return (state[(3-i,3)] == ith) or (state[(3,3-i)] == ith)
+            return (state[3-i,3] == ith) or (state[3,3-i] == ith)
 
     def ordered_heuristic(self, state, last_state):
         flat = state.flatten()
         flat.sort()
+        flat = np.flip(flat, 0)
         score = 0
         corners = [(0,0), (0,3), (3,0), (3,3)]
         corner_vals = [state[0,0], state[0,3], state[3,0], state[3,3]]
@@ -72,32 +74,24 @@ class HeuristicAgent(object):
                 if flat[0] == corner_vals[i]:
                     corner = corners[i]
         if corner:
-            j = 1
-            for i in range(1,3):
-                ith = flat[j]
-                if self.ith_from_corner(state, corner, i, ith):
-                    score += 6 * ith
-                    j += 1
-                else:
-                    score -= ith
-                # elif self.ith_from_corner(last_state, corner, i, ith):
-                #     score -= 2 * ith
-                    # break
-                # elif self.ith_from_corner(state, corner, i+1, ith):
-                #     # score += ith
-                #     break
+            for j in range(1,3):
+                jth = flat[j]
+                for i in range(1,4):
+                    if self.ith_from_corner(state, corner, i, jth):
+                        # score += (2.0 - 0.2 * i) * jth
+                        score += jth
         return score
 
     def empty_tiles_heuristic(self, state, last_state):
         # return float(np.count_nonzero(last_state)) / np.count_nonzero(state)
-        return 4 * abs(np.count_nonzero(last_state) - np.count_nonzero(state))
+        return np.count_nonzero(last_state) - np.count_nonzero(state)
 
     def utility(self, state, last_state):
         h1 = self.corner_heuristic(state, last_state)
         h2 = self.ordered_heuristic(state, last_state)
         h3 = self.empty_tiles_heuristic(state, last_state)
-        h4 = np.max(state)
-        print(h1,'|',h2,'|',h3,'|',h4)
+        h4 = 0#1.5 * np.max(state)
+        # print(h1,'|',h2,'|',h3,'|',h4)
         return h1 + h2 + h3 + h4
         # return 0.7 * np.sum(state) + self.corner_heuristic(state, last_state) + 2 * self.empty_tiles_heuristic(state, last_state) + self.ordered_heuristic(state, last_state)
 
