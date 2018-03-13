@@ -117,6 +117,14 @@ class GameBoard(object):
             actions.append('right')
         return actions
 
+    def action_is_valid(self, a):
+        board = deepcopy(self)
+        actions = [board.up, board.down, board.left, board.right]
+        actions[a]()
+
+        if not np.array_equal(self.grid, board.grid):
+            return False
+        return True
 
 
 
