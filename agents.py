@@ -4,7 +4,7 @@ import numpy as np
 class RandomAgent(object):
     """An agent that selects its moves randomly"""
     def __init__(self):
-        self.actions = ['up', 'down', 'left', 'right']
+        self.actions = [0, 1, 2, 3]
 
     def next_action(self, state):
         return np.random.choice(self.actions)
@@ -12,8 +12,8 @@ class RandomAgent(object):
 class HeuristicAgent(object):
     """An agent that searches for the best move according to its heuristic functions"""
     def __init__(self):
-        self.actions = ['up', 'down', 'left', 'right']
-        self.max_depth = 4
+        self.actions = [0, 1, 2, 3]
+        self.max_depth = 3
         # self.discount = 0.7
         self.discount = 0.7
 
@@ -97,11 +97,11 @@ class HeuristicAgent(object):
 
     def execute_action(self, board, action):
         board = deepcopy(board)
-        if action == 'up':
+        if action == 0:
             board.up()
-        elif action == 'down':
+        elif action == 1:
             board.down()
-        elif action == 'left':
+        elif action == 2:
             board.left()
         else:
             board.right()
@@ -109,7 +109,7 @@ class HeuristicAgent(object):
 
     def search(self, board, depth):
         bestVal = 0
-        bestAction = 'up'
+        bestAction = 0
         for a in self.actions:
             new_board = self.execute_action(board, a)
             if depth == self.max_depth:

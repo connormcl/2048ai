@@ -40,7 +40,7 @@ class GameGrid(Frame):
         self.board = GameBoard()
         self.commands = {   KEY_UP: self.board.up, KEY_DOWN: self.board.down, KEY_LEFT: self.board.left, KEY_RIGHT: self.board.right,
                             KEY_UP_ALT: self.board.up, KEY_DOWN_ALT: self.board.down, KEY_LEFT_ALT: self.board.left, KEY_RIGHT_ALT: self.board.right }
-        self.commands2 = {'up': self.board.up, 'down': self.board.down, 'left': self.board.left, 'right': self.board.right}
+        self.commands2 = {0: self.board.up, 1: self.board.down, 2: self.board.left, 3: self.board.right}
         self.update_grid_cells()
         
         # self.mainloop()
@@ -49,14 +49,13 @@ class GameGrid(Frame):
         import time
         # agent = RandomAgent()
         agent = HeuristicAgent()
-        print(self.board.grid)
+        #print(self.board.grid)
         while not self.board.is_game_over():
-            # time.sleep(.1)
             a = agent.next_action(self.board.grid)
-            print('action:', a, ' |  score:', self.board.score)
+            #print('action:', a, ' |  score:', self.board.score)
             self.commands2[a]()
             self.board.add_tile()
-            print(self.board.grid)
+            #print(self.board.grid)
             self.update_grid_cells()
             self.update()
 

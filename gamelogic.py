@@ -102,27 +102,28 @@ class GameBoard(object):
         board = deepcopy(self)
         board.up()
         if not np.array_equal(self.grid, board.grid):
-            actions.append('up')
+            actions.append(0)
         board = deepcopy(self)
         board.down()
         if not np.array_equal(self.grid, board.grid):
-            actions.append('down')
+            actions.append(1)
         board = deepcopy(self)
         board.left()
         if not np.array_equal(self.grid, board.grid):
-            actions.append('left')
+            actions.append(2)
         board = deepcopy(self)
         board.right()
         if not np.array_equal(self.grid, board.grid):
-            actions.append('right')
+            actions.append(3)
         return actions
 
     def action_is_valid(self, a):
+        # import pdb ; pdb.set_trace()
         board = deepcopy(self)
         actions = [board.up, board.down, board.left, board.right]
         actions[a]()
 
-        if not np.array_equal(self.grid, board.grid):
+        if np.array_equal(self.grid, board.grid):
             return False
         return True
 
