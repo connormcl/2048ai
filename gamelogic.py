@@ -118,10 +118,9 @@ class GameBoard(object):
         return actions
 
     def action_is_valid(self, a):
-        # import pdb ; pdb.set_trace()
         board = deepcopy(self)
         actions = [board.up, board.down, board.left, board.right]
-        actions[a]()
+        actions[int(a)]()
 
         if np.array_equal(self.grid, board.grid):
             return False
