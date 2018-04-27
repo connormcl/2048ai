@@ -25,7 +25,7 @@ def parse_move(x):
 def get_game_data():
 	boards = []
 	moves = []
-	num_training_games = 4006
+	num_training_games = 4027
 	for i in range(num_training_games+1):
 		# import pdb ; pdb.set_trace()
 		game_log = 'game_logs/game' + str(i) + '.log'
