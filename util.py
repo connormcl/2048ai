@@ -84,6 +84,15 @@ def filter_legal_actions(a, allQ, board):
 def process_board(board):
 	return convert_state(board.grid).reshape((1,4,4,16))
 
+def process_grid(grid):
+	return convert_state(grid).reshape((1,4,4,16))
+
+def process_grid_batch(batch):
+	new_batch = np.zeros((batch.shape[0], 4, 4, 16))
+	for i in range(batch.shape[0]):
+		new_batch[i] = process_grid(batch[i])
+	return new_batch
+
 # takes an action and a board, returns next_board and reward
 def execute_and_observe(a, board):
 	# copy the current board
